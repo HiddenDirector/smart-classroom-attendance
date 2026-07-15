@@ -80,6 +80,10 @@ class RecognitionPipeline:
             confidence_threshold=cfg["RECOGNITION_CONFIDENCE_THRESHOLD"],
             detection_scale=cfg["RECOGNITION_DETECTION_SCALE"],
             model=cfg["RECOGNITION_MODEL"],
+            long_range=cfg["RECOGNITION_LONG_RANGE"],
+            long_range_scale=cfg["RECOGNITION_LONG_RANGE_SCALE"],
+            long_range_upsample=cfg["RECOGNITION_LONG_RANGE_UPSAMPLE"],
+            long_range_interval=cfg["RECOGNITION_LONG_RANGE_INTERVAL"],
         )
         with self._app.app_context():
             self._recognizer.load_from_db()

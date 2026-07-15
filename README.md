@@ -80,6 +80,9 @@ All settings live in `config.py` and are overridable via environment / `.env`:
 | `LATE_AFTER_MINUTES` | `15` | Grace period; arrivals after start+grace are **Late** |
 | `RECOGNITION_CONFIDENCE_THRESHOLD` | `0.55` | Min `1 − face_distance` to accept a match |
 | `RECOGNITION_FRAME_INTERVAL` | `5` | Recognize every Nth frame while motion is active |
+| `RECOGNITION_LONG_RANGE` | `true` | Extra high-res detection pass for far-away/small faces |
+| `RECOGNITION_LONG_RANGE_SCALE` | `0.5` | Long-range pass resolution (raise to `1.0` for max range) |
+| `RECOGNITION_LONG_RANGE_INTERVAL` | `2` | Run long-range pass every Nth tick even when near faces are present |
 | `MOTION_MIN_AREA` | `1500` | Min foreground contour area (filters small movements) |
 | `MOTION_ACTIVE_HOLD_SECONDS` | `5.0` | Recognition stays active this long after last motion |
 | `CAMERA_SOURCE` | `0` | Device index (`0`, `1`, …) **or** phone/IP-camera stream URL (e.g. DroidCam `http://<phone-ip>:4747/video`) |

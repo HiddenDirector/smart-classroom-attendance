@@ -30,16 +30,53 @@ class RecognitionResult:
     confidence: float = 0.0
 
 
+def _center_inside(inner: tuple, outer: tuple) -> bool:
+    """True if the centre of box ``inner`` lies within box ``outer``.
+
+    Boxes are (top, right, bottom, left). Used to dedupe the same face found
+    by both detection passes — cheaper than IoU and just as reliable here,
+    since duplicate detections of one face always share a centre.
+    """
+    top, right, bottom, left = inner
+    cy, cx = (top + bottom) / 2, (left + right) / 2
+    o_top, o_right, o_bottom, o_left = outer
+    return o_top <= cy <= o_bottom and o_left <= cx <= o_right
+
+
 class FaceRecognizer:
+    """Two-pass detection for mixed distances:
+
+    * **near pass** — every call, at ``detection_scale`` (default 0.25).
+      Fast; sees faces roughly > 3m-from-camera-lens sized at 720p.
+    * **long-range pass** — at ``long_range_scale`` (default 0.5) with dlib
+      upsampling, which finds faces several times smaller/farther. ~16x the
+      cost of the near pass, so it runs only when the near pass found nothing
+      OR every ``long_range_interval``-th call — that keeps far people
+      detectable even while someone is standing close to the camera.
+
+    Results from both passes are merged; duplicates (same face centre) keep
+    the near-pass box. Every face in a frame is encoded and matched in one
+    vectorised batch, so groups of people cost one matrix op, not N.
+    """
+
     def __init__(
         self,
         confidence_threshold: float = 0.55,
         detection_scale: float = 0.25,
         model: str = "hog",
+        long_range: bool = True,
+        long_range_scale: float = 0.5,
+        long_range_upsample: int = 1,
+        long_range_interval: int = 2,
     ):
         self.confidence_threshold = confidence_threshold
         self.detection_scale = detection_scale
         self.model = model
+        self.long_range = long_range
+        self.long_range_scale = long_range_scale
+        self.long_range_upsample = long_range_upsample
+        self.long_range_interval = max(long_range_interval, 1)
+        self._tick = 0
         self._lock = threading.Lock()
         self._known = np.empty((0, 128))
         self._owners: list[tuple[int, str]] = []  # row i -> (student_id, name)
@@ -64,26 +101,57 @@ class FaceRecognizer:
         return len(rows)
 
     # --- Recognition ----------------------------------------------------------
-    def recognize(self, frame_bgr: np.ndarray) -> list[RecognitionResult]:
-        """Detect + identify every face in a BGR frame."""
+    def _detect(
+        self, frame_bgr: np.ndarray, scale: float, upsample: int
+    ) -> list[tuple[tuple, np.ndarray]]:
+        """One detection pass. Returns [(full-frame box, encoding), ...]."""
         fr = load_face_recognition()
         cv2 = load_cv2()
-        scale = self.detection_scale
-
         small = cv2.resize(frame_bgr, (0, 0), fx=scale, fy=scale)
         rgb = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
-        locations = fr.face_locations(rgb, model=self.model)
+        locations = fr.face_locations(
+            rgb, number_of_times_to_upsample=upsample, model=self.model
+        )
         if not locations:
             return []
         encodings = fr.face_encodings(rgb, locations)
+        return [
+            (tuple(int(v / scale) for v in loc), enc)
+            for loc, enc in zip(locations, encodings)
+        ]
+
+    def recognize(self, frame_bgr: np.ndarray) -> list[RecognitionResult]:
+        """Detect + identify every face in a BGR frame (near + far)."""
+        fr = load_face_recognition()
+
+        # Near pass: cheap, every call.
+        pairs = self._detect(frame_bgr, self.detection_scale, 0)
+
+        # Long-range pass: when the near pass saw nothing, or periodically so
+        # far-away people are still found while someone stands close.
+        self._tick += 1
+        if self.long_range and (
+            not pairs or self._tick % self.long_range_interval == 0
+        ):
+            for box, enc in self._detect(
+                frame_bgr, self.long_range_scale, self.long_range_upsample
+            ):
+                duplicate = any(
+                    _center_inside(box, near_box) or _center_inside(near_box, box)
+                    for near_box, _ in pairs
+                )
+                if not duplicate:
+                    pairs.append((box, enc))
+
+        if not pairs:
+            return []
 
         with self._lock:
             known = self._known
             owners = self._owners
 
         results: list[RecognitionResult] = []
-        for (top, right, bottom, left), encoding in zip(locations, encodings):
-            box = tuple(int(v / scale) for v in (top, right, bottom, left))
+        for box, encoding in pairs:
             if known.shape[0] == 0:
                 results.append(RecognitionResult(box=box, is_match=False))
                 continue

@@ -74,6 +74,15 @@ class Config:
     RECOGNITION_DETECTION_SCALE = float(os.environ.get("RECOGNITION_DETECTION_SCALE", 0.25))
     # "hog" = CPU friendly, "cnn" = accurate but needs a GPU-built dlib.
     RECOGNITION_MODEL = os.environ.get("RECOGNITION_MODEL", "hog")
+    # --- Long-range / multi-person detection ---
+    # Second detection pass at higher resolution + dlib upsampling to find
+    # small (far-away) faces the fast pass misses. It runs when the fast pass
+    # finds nothing, or every Nth recognition tick so distant people are still
+    # detected while someone stands near the camera.
+    RECOGNITION_LONG_RANGE = _env_bool("RECOGNITION_LONG_RANGE", True)
+    RECOGNITION_LONG_RANGE_SCALE = float(os.environ.get("RECOGNITION_LONG_RANGE_SCALE", 0.5))
+    RECOGNITION_LONG_RANGE_UPSAMPLE = int(os.environ.get("RECOGNITION_LONG_RANGE_UPSAMPLE", 1))
+    RECOGNITION_LONG_RANGE_INTERVAL = int(os.environ.get("RECOGNITION_LONG_RANGE_INTERVAL", 2))
     # Seconds before the pipeline will re-process the same student again.
     RECOGNITION_REMARK_COOLDOWN = float(os.environ.get("RECOGNITION_REMARK_COOLDOWN", 120.0))
     # Minimum usable face encodings a registration capture must yield.
