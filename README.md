@@ -41,6 +41,11 @@ git clone <this repo> && cd smart-attendance
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt        # dlib compiles — takes a few minutes
 
+# Apple Silicon: if the dlib build fails with "'fp.h' file not found",
+# use the prebuilt wheel instead:
+#   pip install dlib-bin face_recognition_models "setuptools<81"
+#   pip install --no-deps face_recognition
+
 # 3. Configuration
 cp .env.example .env                   # set SECRET_KEY at minimum
 
