@@ -44,8 +44,10 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.routes.students import students_bp
     from app.routes.attendance import attendance_bp
     from app.routes.camera import camera_bp
+    from app.routes.sessions import sessions_bp
 
-    for bp in (auth_bp, dashboard_bp, students_bp, attendance_bp, camera_bp):
+    for bp in (auth_bp, dashboard_bp, students_bp, attendance_bp, camera_bp,
+               sessions_bp):
         app.register_blueprint(bp)
 
     # --- Recognition pipeline ------------------------------------------------

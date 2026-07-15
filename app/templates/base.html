@@ -29,6 +29,9 @@
         <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance.history') }}"><i class="bi bi-calendar-check me-1"></i>Attendance</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('students.list_students') }}"><i class="bi bi-people me-1"></i>Students</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.analytics') }}"><i class="bi bi-graph-up me-1"></i>Analytics</a></li>
+        {% if current_user.is_admin %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('sessions.list_sessions') }}"><i class="bi bi-clock me-1"></i>Sessions</a></li>
+        {% endif %}
       </ul>
       <div class="d-flex align-items-center gap-3">
         <button id="theme-toggle" class="btn btn-sm btn-outline-secondary" title="Toggle dark mode">

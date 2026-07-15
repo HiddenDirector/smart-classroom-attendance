@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Class sessions — Smart Attendance{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Class sessions</h1>
+<p class="text-body-secondary small">
+  Each session is an attendance window with its own late cutoff — students are
+  marked once per session per day. Times outside every window fall back to the
+  whole-day <strong>{{ sessions[0].name if sessions and sessions[0].is_default else 'General' }}</strong> session.
+</p>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr><th>Name</th><th>Window</th><th>Late after</th><th class="text-end">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for s in sessions %}
+            <tr>
+              <td>
+                {{ s.name }}
+                {% if s.is_default %}<span class="badge text-bg-secondary ms-1">default</span>{% endif %}
+              </td>
+              <td>
+                {% if s.start_time %}{{ s.start_time.strftime('%H:%M') }}–{{ s.end_time.strftime('%H:%M') }}
+                {% else %}<span class="text-body-secondary">whole day</span>{% endif %}
+              </td>
+              <td>
+                {% if s.late_after_minutes is not none %}{{ s.late_after_minutes }} min
+                {% else %}<span class="text-body-secondary">global default</span>{% endif %}
+              </td>
+              <td class="text-end">
+                {% if not s.is_default %}
+                <form class="d-inline" method="post"
+                      action="{{ url_for('sessions.delete_session', session_id=s.session_id) }}"
+                      onsubmit="return confirm('Delete session {{ s.name }}?');">
+                  <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">Add session</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('sessions.create_session') }}">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input class="form-control" name="name" placeholder="Period 1" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label class="form-label">Start</label>
+              <input class="form-control" type="time" name="start_time" required>
+            </div>
+            <div class="col">
+              <label class="form-label">End</label>
+              <input class="form-control" type="time" name="end_time" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Late after (minutes)</label>
+            <input class="form-control" type="number" name="late_after_minutes" min="0"
+                   placeholder="leave empty for global default">
+          </div>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1"></i>Add session</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
