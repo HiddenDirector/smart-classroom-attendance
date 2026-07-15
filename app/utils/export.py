@@ -5,14 +5,15 @@ import io
 
 from app.models.attendance import Attendance
 
-_HEADERS = ["Date", "Time", "Roll Number", "Full Name", "Department", "Year",
-            "Status", "Confidence"]
+_HEADERS = ["Date", "Session", "Time", "Roll Number", "Full Name", "Department",
+            "Year", "Status", "Confidence"]
 
 
 def _rows(records: list[Attendance]):
     for r in records:
         yield [
             r.date.isoformat(),
+            r.session.name,
             r.time.strftime("%H:%M:%S"),
             r.student.roll_number,
             r.student.full_name,

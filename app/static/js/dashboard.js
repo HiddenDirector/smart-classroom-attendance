@@ -118,6 +118,7 @@
       todayTable.innerHTML = records.length ? records.map((r) => `
         <tr>
           <td>${r.time}</td>
+          <td><span class="badge text-bg-light border">${escapeHtml(r.session)}</span></td>
           <td>${escapeHtml(r.roll_number)}</td>
           <td>${escapeHtml(r.full_name)}</td>
           <td class="d-none d-md-table-cell">${escapeHtml(r.department)}</td>
@@ -126,7 +127,7 @@
             ? Math.round(r.confidence_score * 100) + '%'
             : '<span class="text-body-secondary">manual</span>'}</td>
         </tr>`).join('')
-        : '<tr><td colspan="6" class="text-center text-body-secondary py-4">No attendance yet today.</td></tr>';
+        : '<tr><td colspan="7" class="text-center text-body-secondary py-4">No attendance yet today.</td></tr>';
     } catch (err) { /* retry on next poll */ }
   }
 

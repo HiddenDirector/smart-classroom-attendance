@@ -38,13 +38,14 @@
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead>
-        <tr><th>Time</th><th>Roll No.</th><th>Name</th><th class="d-none d-md-table-cell">Department</th>
+        <tr><th>Time</th><th>Session</th><th>Roll No.</th><th>Name</th><th class="d-none d-md-table-cell">Department</th>
             <th class="d-none d-sm-table-cell">Year</th><th>Status</th><th>Confidence</th></tr>
       </thead>
       <tbody>
         {% for r in records %}
         <tr>
           <td>{{ r.time.strftime('%H:%M:%S') }}</td>
+          <td><span class="badge text-bg-light border">{{ r.session.name }}</span></td>
           <td>{{ r.student.roll_number }}</td>
           <td>{{ r.student.full_name }}</td>
           <td class="d-none d-md-table-cell">{{ r.student.department }}</td>
@@ -58,7 +59,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-body-secondary py-4">No records for this date/filter.</td></tr>
+        <tr><td colspan="8" class="text-center text-body-secondary py-4">No records for this date/filter.</td></tr>
         {% endfor %}
       </tbody>
     </table>
