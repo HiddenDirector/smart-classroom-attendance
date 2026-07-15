@@ -2,5 +2,6 @@
 from app.models.user import User
 from app.models.student import Student
 from app.models.attendance import Attendance
+from app.models.class_session import ClassSession
 
-__all__ = ["User", "Student", "Attendance"]
+__all__ = ["User", "Student", "Attendance", "ClassSession"]
