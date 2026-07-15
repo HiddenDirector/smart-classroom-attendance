@@ -32,7 +32,11 @@ def test_single_encoding_is_promoted_to_matrix(student):
 def test_deleting_student_cascades_attendance(db, student):
     from datetime import date, time
 
-    db.session.add(Attendance(student_id=student.student_id, date=date(2026, 7, 1),
+    from app.models.class_session import ClassSession
+
+    session = ClassSession.get_or_create_default()
+    db.session.add(Attendance(student_id=student.student_id,
+                              session_id=session.session_id, date=date(2026, 7, 1),
                               time=time(9, 0), status="Present", confidence_score=0.9))
     db.session.commit()
     assert Attendance.query.count() == 1

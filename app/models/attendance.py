@@ -11,7 +11,10 @@ from app.extensions import db
 class Attendance(db.Model):
     __tablename__ = "attendance"
     __table_args__ = (
-        db.UniqueConstraint("student_id", "date", name="uq_attendance_student_date"),
+        db.UniqueConstraint(
+            "student_id", "date", "session_id",
+            name="uq_attendance_student_date_session",
+        ),
     )
 
     STATUS_PRESENT = "Present"
@@ -20,6 +23,10 @@ class Attendance(db.Model):
     attendance_id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(
         db.Integer, db.ForeignKey("students.student_id"), nullable=False, index=True
+    )
+    session_id = db.Column(
+        db.Integer, db.ForeignKey("class_sessions.session_id"),
+        nullable=False, index=True,
     )
     date = db.Column(db.Date, nullable=False, index=True)
     time = db.Column(db.Time, nullable=False)
@@ -31,6 +38,7 @@ class Attendance(db.Model):
         return {
             "attendance_id": self.attendance_id,
             "student_id": self.student_id,
+            "session": self.session.name,
             "full_name": self.student.full_name,
             "roll_number": self.student.roll_number,
             "department": self.student.department,

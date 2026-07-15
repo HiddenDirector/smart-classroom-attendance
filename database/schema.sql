@@ -28,15 +28,29 @@ CREATE TABLE IF NOT EXISTS students (
     updated_at    DATETIME
 );
 
+CREATE TABLE IF NOT EXISTS class_sessions (
+    session_id         INTEGER PRIMARY KEY,
+    name               VARCHAR(80) NOT NULL UNIQUE,
+    start_time         TIME,        -- NULL = whole-day (default session only)
+    end_time           TIME,
+    late_after_minutes INTEGER,     -- NULL = use global LATE_AFTER_MINUTES
+    is_default         BOOLEAN NOT NULL DEFAULT 0,
+    created_at         DATETIME
+);
+
 CREATE TABLE IF NOT EXISTS attendance (
     attendance_id    INTEGER PRIMARY KEY,
     student_id       INTEGER NOT NULL REFERENCES students(student_id),
+    session_id       INTEGER NOT NULL REFERENCES class_sessions(session_id),
     date             DATE    NOT NULL,
     time             TIME    NOT NULL,
     status           VARCHAR(16) NOT NULL,          -- 'Present' | 'Late'
     confidence_score FLOAT,                        -- NULL for manual entries
-    -- The duplicate-prevention guarantee: one row per student per day.
-    CONSTRAINT uq_attendance_student_date UNIQUE (student_id, date)
+    -- Duplicate prevention: one row per student per day PER SESSION.
+    -- session_id is NOT NULL on purpose: SQLite treats NULLs as distinct in
+    -- UNIQUE constraints, which would break the guarantee.
+    CONSTRAINT uq_attendance_student_date_session
+        UNIQUE (student_id, date, session_id)
 );
 
 CREATE INDEX IF NOT EXISTS ix_users_username      ON users (username);
