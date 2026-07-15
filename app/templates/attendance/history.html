@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Attendance — Smart Attendance{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h4 mb-0">Attendance history</h1>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('attendance.export_csv', date=target_date.isoformat(), q=q) }}">
+      <i class="bi bi-filetype-csv me-1"></i>CSV
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('attendance.export_xlsx', date=target_date.isoformat(), q=q) }}">
+      <i class="bi bi-file-earmark-excel me-1"></i>Excel
+    </a>
+  </div>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-sm-4 col-md-3">
+    <input class="form-control" type="date" name="date" value="{{ target_date.isoformat() }}">
+  </div>
+  <div class="col-sm-5 col-md-4">
+    <input class="form-control" type="search" name="q" value="{{ q }}"
+           placeholder="Search name or roll number…">
+  </div>
+  <div class="col-sm-3 col-md-2">
+    <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i>Filter</button>
+  </div>
+</form>
+
+<p class="text-body-secondary small">
+  {{ target_date.strftime('%A, %d %B %Y') }} —
+  {{ stats.present }} present · {{ stats.late }} late · {{ stats.absent }} absent
+  ({{ stats.attendance_percentage }}% attendance)
+</p>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Time</th><th>Roll No.</th><th>Name</th><th class="d-none d-md-table-cell">Department</th>
+            <th class="d-none d-sm-table-cell">Year</th><th>Status</th><th>Confidence</th></tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.time.strftime('%H:%M:%S') }}</td>
+          <td>{{ r.student.roll_number }}</td>
+          <td>{{ r.student.full_name }}</td>
+          <td class="d-none d-md-table-cell">{{ r.student.department }}</td>
+          <td class="d-none d-sm-table-cell">{{ r.student.year }}</td>
+          <td>
+            <span class="badge text-bg-{{ 'success' if r.status == 'Present' else 'warning' }}">{{ r.status }}</span>
+          </td>
+          <td>
+            {% if r.confidence_score is not none %}{{ '%.0f'|format(r.confidence_score * 100) }}%
+            {% else %}<span class="text-body-secondary">manual</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-body-secondary py-4">No records for this date/filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

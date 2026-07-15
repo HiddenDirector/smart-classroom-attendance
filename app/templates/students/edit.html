@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ student.full_name }} — Smart Attendance{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Edit student</h1>
+<div class="row">
+  <div class="col-lg-5 col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Full name</label>
+            <input class="form-control" name="full_name" value="{{ student.full_name }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Roll number</label>
+            <input class="form-control" name="roll_number" value="{{ student.roll_number }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input class="form-control" name="department" value="{{ student.department }}" required>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Year</label>
+            <select class="form-select" name="year">
+              {% for y in range(1, 9) %}
+              <option value="{{ y }}" {{ 'selected' if student.year == y }}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Save</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('students.list_students') }}">Cancel</a>
+            <a class="btn btn-outline-info ms-auto" href="{{ url_for('students.recapture_page', student_id=student.student_id) }}">
+              <i class="bi bi-camera me-1"></i>Re-capture face
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

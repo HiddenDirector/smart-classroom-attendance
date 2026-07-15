@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Students — Smart Attendance{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h4 mb-0">Students <span class="badge text-bg-secondary">{{ students|length }}</span></h1>
+  {% if current_user.is_admin %}
+  <a class="btn btn-primary" href="{{ url_for('students.register_page') }}">
+    <i class="bi bi-person-plus me-1"></i> Register student
+  </a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-body pb-0">
+    <input id="student-filter" class="form-control mb-3" placeholder="Filter by name or roll number…">
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Roll No.</th><th>Name</th><th class="d-none d-md-table-cell">Department</th>
+            <th class="d-none d-sm-table-cell">Year</th><th>Face data</th>
+            {% if current_user.is_admin %}<th class="text-end">Actions</th>{% endif %}</tr>
+      </thead>
+      <tbody id="student-rows">
+        {% for s in students %}
+        <tr data-search="{{ (s.full_name ~ ' ' ~ s.roll_number)|lower }}">
+          <td>{{ s.roll_number }}</td>
+          <td>{{ s.full_name }}</td>
+          <td class="d-none d-md-table-cell">{{ s.department }}</td>
+          <td class="d-none d-sm-table-cell">{{ s.year }}</td>
+          <td>
+            {% if s.has_encoding %}
+              <span class="badge text-bg-success"><i class="bi bi-check-lg"></i> enrolled</span>
+            {% else %}
+              <span class="badge text-bg-warning">missing</span>
+            {% endif %}
+          </td>
+          {% if current_user.is_admin %}
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('students.edit', student_id=s.student_id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('students.recapture_page', student_id=s.student_id) }}" title="Re-capture face"><i class="bi bi-camera"></i></a>
+            <form class="d-inline" method="post" action="{{ url_for('students.delete', student_id=s.student_id) }}"
+                  onsubmit="return confirm('Delete {{ s.full_name }} and ALL their attendance records?');">
+              <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-body-secondary py-4">
+          No students yet.{% if current_user.is_admin %} Use “Register student” to add the first one.{% endif %}
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Client-side filter — the list is small enough that a round-trip is overkill.
+  document.getElementById('student-filter').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#student-rows tr[data-search]').forEach((row) => {
+      row.classList.toggle('d-none', !row.dataset.search.includes(q));
+    });
+  });
+</script>
+{% endblock %}

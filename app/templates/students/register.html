@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Re-capture face' if student else 'Register student' }} — Smart Attendance{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">
+  {% if student %}Re-capture face — {{ student.full_name }}{% else %}Register student{% endif %}
+</h1>
+
+<div class="row g-4"
+     id="capture-app"
+     data-target-images="{{ target_images }}"
+     data-endpoint="{{ url_for('students.recapture_submit', student_id=student.student_id) if student else url_for('students.register_submit') }}"
+     data-mode="{{ 'recapture' if student else 'register' }}">
+
+  {% if not student %}
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">1 · Student details</div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Full name</label>
+          <input class="form-control" id="f-full-name" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Roll number</label>
+          <input class="form-control" id="f-roll" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Department</label>
+          <input class="form-control" id="f-dept" required>
+        </div>
+        <div class="mb-0">
+          <label class="form-label">Year</label>
+          <select class="form-select" id="f-year">
+            {% for y in range(1, 9) %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="{{ 'col-lg-8' if not student else 'col-lg-12' }}">
+    <div class="card">
+      <div class="card-header">{{ '2 · ' if not student }}Face capture</div>
+      <div class="card-body">
+        <p class="text-body-secondary small mb-3">
+          Look straight at the camera in good lighting. The system captures
+          <strong>{{ target_images }}</strong> photos automatically — turn your head slightly
+          between shots for better recognition later.
+        </p>
+        <div class="row g-3">
+          <div class="col-md-7">
+            <div class="bg-black rounded d-flex align-items-center justify-content-center feed-box">
+              <video id="cam-preview" autoplay playsinline muted class="w-100 rounded"></video>
+            </div>
+            <div class="progress mt-2" style="height: 6px;">
+              <div id="capture-progress" class="progress-bar" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div id="thumbs" class="d-flex flex-wrap gap-1 mb-3"></div>
+            <div id="capture-alert" class="alert alert-danger d-none small mb-3"></div>
+            <div class="d-grid gap-2">
+              <button id="btn-capture" class="btn btn-primary" disabled>
+                <i class="bi bi-camera me-1"></i> Start capture
+              </button>
+              <button id="btn-submit" class="btn btn-success" disabled>
+                <span class="spinner-border spinner-border-sm me-1 d-none" id="submit-spinner"></span>
+                <i class="bi bi-check-lg me-1"></i> Save student
+              </button>
+              <a class="btn btn-outline-secondary" href="{{ url_for('students.list_students') }}">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/capture.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,21 @@
+services:
+  attendance:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      FLASK_ENV: production
+      CAMERA_INDEX: 0
+      CLASS_START_TIME: "09:00"
+      LATE_AFTER_MINUTES: 15
+      PIPELINE_AUTOSTART: "true"
+    volumes:
+      # Persist the SQLite database and logs across container rebuilds.
+      - ./database:/app/database
+      - ./logs:/app/logs
+    devices:
+      # Pass the host webcam through (Linux hosts; adjust the device path).
+      # On macOS/Windows, Docker cannot access the webcam — run natively.
+      - /dev/video0:/dev/video0
+    restart: unless-stopped

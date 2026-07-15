@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Analytics — Smart Attendance{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h4 mb-0">Analytics</h1>
+  <select id="range-select" class="form-select w-auto">
+    <option value="7">Last 7 days</option>
+    <option value="14" selected>Last 14 days</option>
+    <option value="30">Last 30 days (monthly report)</option>
+  </select>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-bar-chart me-1"></i> Daily attendance</div>
+      <div class="card-body"><canvas id="attendance-chart" height="120"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-graph-up me-1"></i> Avg. recognition confidence</div>
+      <div class="card-body"><canvas id="confidence-chart" height="220"></canvas></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}
