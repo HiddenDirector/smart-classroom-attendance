@@ -15,9 +15,12 @@ with automatic Present/Late classification.
 - **Face recognition** — dlib 128-d encodings via `face_recognition`;
   multi-sample enrolment (12 photos), configurable confidence threshold,
   live name + confidence overlay on the video feed.
-- **Attendance rules** — one record per student per day (enforced by a DB
-  UNIQUE constraint, not just app logic), automatic Present/Late based on a
-  configurable class start time + grace period.
+- **Attendance rules** — one record per student per class session (enforced
+  by a DB UNIQUE constraint, not just app logic), automatic Present/Late
+  based on each session's start time + grace period.
+- **Class sessions** — define periods ("Period 1", 09:00–10:30) with
+  per-session late cutoffs; students are marked once in each period they
+  attend. A whole-day default session covers times outside every window.
 - **Student registration** — browser-webcam capture of 10–20 photos,
   server-side encoding, edit / delete / re-capture.
 - **Dashboard** — live MJPEG feed with recognition overlay, today's
@@ -152,9 +155,9 @@ there for development.
 
 - **More cameras**: instantiate one `CameraService` + `RecognitionPipeline`
   per device index (nothing in either class is index-specific).
-- **Class sessions instead of days**: add a `class_sessions` table and swap
-  the `UNIQUE(student_id, date)` constraint for `(student_id, session_id)` —
-  the service layer is the only other place that touches the rule.
+- **Weekly timetables**: sessions currently apply every day; adding a
+  weekday mask to `ClassSession` and filtering in `resolve()` is the next
+  step for schools whose periods differ by day.
 - **QR backup attendance**: point a scanner at `POST /attendance/manual`
   with the roll number; it shares the same marking rules.
 - **MediaPipe instead of dlib**: implement `face_engine/recognizer.py`'s
@@ -179,8 +182,9 @@ there for development.
   anti-spoofing layer.
 - **Recognition accuracy degrades** with backlighting, heavy occlusion
   (masks), and very similar faces (identical twins will cross-match).
-- **Day-granularity sessions** — one attendance record per student per day;
-  multiple class periods per day need the sessions extension described below.
+- **No schema migrations** — the session feature changed the attendance
+  table; existing databases from older versions must be recreated (or
+  migrated by hand) until Alembic lands.
 - **Single process, one camera per process** — by design (see deployment
   notes); horizontal scaling requires one instance per camera.
 - **SQLite write concurrency** is modest; fine for a classroom, switch to
@@ -190,7 +194,7 @@ there for development.
 
 Realistic next steps, in rough priority order:
 
-- [ ] Class-session model (multiple periods per day) replacing date-unique marking
+- [x] Class-session model (multiple periods per day) replacing date-unique marking
 - [ ] Liveness/anti-spoofing check (blink detection or depth heuristics)
 - [ ] Alembic migrations instead of `create_all`
 - [ ] CSRF protection + login rate limiting for internet-facing deployments

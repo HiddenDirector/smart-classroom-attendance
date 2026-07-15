@@ -102,6 +102,18 @@ Same body with `images` only; replaces the stored encodings.
 ### `POST /students/<id>/edit` — form fields `full_name`, `roll_number`, `department`, `year`.
 ### `POST /students/<id>/delete` — deletes student + attendance (cascade).
 
+## Class sessions (admin)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| GET | `/sessions/` | — | Session list + add form |
+| POST | `/sessions/` | form: `name`, `start_time` (HH:MM), `end_time`, `late_after_minutes` (optional) | Create a period |
+| POST | `/sessions/<id>/delete` | — | Delete (blocked for the default session and any session with attendance records) |
+
+Attendance marking resolves the session covering the current time of day;
+outside every window the whole-day "General" default applies. Attendance
+JSON/exports include the session name.
+
 ## Attendance
 
 ### `POST /attendance/manual`
