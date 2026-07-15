@@ -18,6 +18,12 @@ def _env_bool(name: str, default: bool) -> bool:
     return os.environ.get(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _parse_camera_source(value: str) -> int | str:
+    """Digits -> local device index; anything else -> stream URL."""
+    value = value.strip()
+    return int(value) if value.isdigit() else value
+
+
 class Config:
     """Base configuration shared by all environments."""
 
@@ -34,7 +40,15 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- Camera ------------------------------------------------------------
-    CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", 0))
+    # CAMERA_SOURCE accepts either a local device index ("0", "1", ...) or a
+    # network stream URL — e.g. a phone running an IP-camera app:
+    #   DroidCam:  http://<phone-ip>:4747/video
+    #   IP Webcam: http://<phone-ip>:8080/video
+    #   RTSP:      rtsp://<phone-ip>:8554/live
+    # (CAMERA_INDEX is still honoured for backwards compatibility.)
+    CAMERA_SOURCE = _parse_camera_source(
+        os.environ.get("CAMERA_SOURCE", os.environ.get("CAMERA_INDEX", "0"))
+    )
     FRAME_WIDTH = int(os.environ.get("FRAME_WIDTH", 1280))
     FRAME_HEIGHT = int(os.environ.get("FRAME_HEIGHT", 720))
 

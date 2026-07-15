@@ -82,7 +82,7 @@ All settings live in `config.py` and are overridable via environment / `.env`:
 | `RECOGNITION_FRAME_INTERVAL` | `5` | Recognize every Nth frame while motion is active |
 | `MOTION_MIN_AREA` | `1500` | Min foreground contour area (filters small movements) |
 | `MOTION_ACTIVE_HOLD_SECONDS` | `5.0` | Recognition stays active this long after last motion |
-| `CAMERA_INDEX` | `0` | OpenCV device index |
+| `CAMERA_SOURCE` | `0` | Device index (`0`, `1`, …) **or** phone/IP-camera stream URL (e.g. DroidCam `http://<phone-ip>:4747/video`) |
 | `PIPELINE_AUTOSTART` | `false` | Start monitoring on server boot |
 | `DATABASE_URL` | SQLite file | Set a PostgreSQL URL to switch engines |
 

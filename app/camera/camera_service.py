@@ -37,28 +37,36 @@ class CameraService:
     def is_running(self) -> bool:
         return self._running
 
-    def start(self, index: int = 0, width: int = 1280, height: int = 720) -> None:
+    def start(self, source: int | str = 0, width: int = 1280, height: int = 720) -> None:
+        """Open a local device (int index) or a network stream (URL string)."""
         with self._lock:
             if self._running:
                 return
             cv2 = load_cv2()
-            self._capture = cv2.VideoCapture(index)
+            self._capture = cv2.VideoCapture(source)
             if not self._capture.isOpened():
                 self._capture.release()
                 self._capture = None
-                raise CameraError(
-                    f"Could not open camera index {index}. Check CAMERA_INDEX "
-                    "and that no other application is using the webcam."
+                hint = (
+                    "Check that the phone/IP camera app is running and the URL "
+                    "is reachable from this machine."
+                    if isinstance(source, str)
+                    else "Check CAMERA_SOURCE and that no other application is "
+                    "using the webcam."
                 )
-            self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-            self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+                raise CameraError(f"Could not open camera source {source!r}. {hint}")
+            if isinstance(source, int):
+                # Resolution hints only make sense for local devices; network
+                # streams deliver whatever the phone app is configured to send.
+                self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+                self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
             self._running = True
             self._consecutive_failures = 0
             self._thread = threading.Thread(
                 target=self._capture_loop, name="camera-capture", daemon=True
             )
             self._thread.start()
-        log.info("Camera %d started", index)
+        log.info("Camera source %r started", source)
 
     def stop(self) -> None:
         with self._lock:

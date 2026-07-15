@@ -69,7 +69,7 @@ class RecognitionPipeline:
         if self._running:
             return False
         cfg = self._app.config
-        camera.start(cfg["CAMERA_INDEX"], cfg["FRAME_WIDTH"], cfg["FRAME_HEIGHT"])
+        camera.start(cfg["CAMERA_SOURCE"], cfg["FRAME_WIDTH"], cfg["FRAME_HEIGHT"])
 
         self._detector = MotionDetector(
             min_area=cfg["MOTION_MIN_AREA"],
