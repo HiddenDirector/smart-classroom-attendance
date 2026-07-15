@@ -172,6 +172,34 @@ there for development.
 - For internet-facing deployments add CSRF protection (Flask-WTF) and rate
   limiting on `/login` (Flask-Limiter); both drop in without refactoring.
 
+## Known limitations
+
+- **No liveness detection** — a printed photo held to the camera can be
+  recognized. Don't use this where spoofing matters without adding an
+  anti-spoofing layer.
+- **Recognition accuracy degrades** with backlighting, heavy occlusion
+  (masks), and very similar faces (identical twins will cross-match).
+- **Day-granularity sessions** — one attendance record per student per day;
+  multiple class periods per day need the sessions extension described below.
+- **Single process, one camera per process** — by design (see deployment
+  notes); horizontal scaling requires one instance per camera.
+- **SQLite write concurrency** is modest; fine for a classroom, switch to
+  PostgreSQL for campus-scale deployments.
+
+## Roadmap
+
+Realistic next steps, in rough priority order:
+
+- [ ] Class-session model (multiple periods per day) replacing date-unique marking
+- [ ] Liveness/anti-spoofing check (blink detection or depth heuristics)
+- [ ] Alembic migrations instead of `create_all`
+- [ ] CSRF protection + login rate limiting for internet-facing deployments
+- [ ] Multi-camera orchestration (one pipeline per source in a single dashboard)
+- [ ] QR-code fallback UI on top of the existing `/attendance/manual` endpoint
+
+Contributions welcome — the [architecture doc](docs/ARCHITECTURE.md) and
+[file guide](docs/FILE_GUIDE.md) are the fastest way in.
+
 ## License
 
 MIT — free to use, modify, and distribute for any purpose. See [LICENSE](LICENSE).
