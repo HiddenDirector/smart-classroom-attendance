@@ -6,7 +6,7 @@ classroom. A webcam watches the entrance; **motion detection** gates a
 enters. Confident matches are written to SQLite — once per student per day,
 with automatic Present/Late classification.
 
-![stack](https://img.shields.io/badge/Flask-3.x-blue) ![python](https://img.shields.io/badge/Python-3.9+-green)
+![stack](https://img.shields.io/badge/Flask-3.x-blue) ![python](https://img.shields.io/badge/Python-3.9+-green) ![license](https://img.shields.io/badge/License-MIT-yellow)
 
 ## Features
 
@@ -168,3 +168,7 @@ there for development.
   check local regulations (GDPR etc.) before production use.
 - For internet-facing deployments add CSRF protection (Flask-WTF) and rate
   limiting on `/login` (Flask-Limiter); both drop in without refactoring.
+
+## License
+
+MIT — free to use, modify, and distribute for any purpose. See [LICENSE](LICENSE).
